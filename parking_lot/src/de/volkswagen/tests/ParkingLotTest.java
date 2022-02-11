@@ -2,12 +2,17 @@ package de.volkswagen.tests;
 
 import static org.junit.Assert.assertEquals;
 
+import java.time.LocalDateTime;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import de.volkswagen.application.ParkingLot;
+import de.volkswagen.application.Ticket;
+import javafx.scene.paint.Color;
 
 class ParkingLotTest {
 
@@ -69,25 +74,57 @@ class ParkingLotTest {
 
 	@ParameterizedTest
 	@ValueSource(ints = { 0, 1, 100, Integer.MAX_VALUE })
-	@DisplayName("Foo")
-	void foo(int parkingLotNumber) {
+	@DisplayName("getParkingLotNumber returnParkingLotNumber elseThrowRunTimeException")
+	void getParkingLotNumberTest(int parkingLotNumber) {
 
 		// GIVEN
 		// Parking spaces are numbered from 1 to the maximum number of spaces on the lot
 		ParkingLot parkingLot = new ParkingLot(100);
 		int expected = parkingLotNumber;
-		// WHEN
 
 		// THEN
 		if (parkingLotNumber > 0 && parkingLot.getSizeParkingLot() >= parkingLotNumber) {
+			// WHEN parkingLotNumber is correct
 			int actual = parkingLot.parkingLotNumber(parkingLotNumber);
 			assertEquals(expected, actual);
 		} else {
+			// WHEN parkingLotNumber is incorrect
 			RuntimeException expectedException = Assertions.assertThrows(RuntimeException.class, () -> {
 				parkingLot.parkingLotNumber(parkingLotNumber);
 			}, "RuntimeException Error was expected");
 			assertEquals("Parking Lot Number must between 1 and " + parkingLot.getSizeParkingLot(),
 					expectedException.getMessage());
+		}
+	}
+	
+	@ParameterizedTest
+	@ValueSource(ints = { 1, 2})
+	@DisplayName("createTicket returnNewTicket thorwsRunTimeExceptionIfNoSlotIsAvailable")
+	void createTicketTest(int parkingSize) {
+
+		// GIVEN
+		// When a car enters the parking lot, a ticket is created. The ticket issuing process 
+		// includes documenting the time entered, license plate number and the color of the car 
+		// and allocating an available parking slot to the car. The ticket ID should be a random 
+		// sequence of numbers and characters.
+		ParkingLot parkingLot = new ParkingLot(parkingSize);
+		
+		// WHEN
+		String licensePlate = "LA-805";
+		Ticket ticket =parkingLot.createTicket(licensePlate, Color.RED);
+		
+		// THEN
+		assertEquals(licensePlate, ticket.getLicensePlateNumber());
+		assertEquals(Color.RED, ticket.getCarColor());
+//		System.out.println(ticket.getTimeEntered() + " " + ticket.getTicketID());
+		if(parkingSize == 1) {
+			RuntimeException expectedException = Assertions.assertThrows(RuntimeException.class, () -> {
+				Ticket ticket2 =parkingLot.createTicket(licensePlate, Color.RED);
+			}, "RuntimeException Error was expected");
+			assertEquals("No available parking slot", expectedException.getMessage());
+		}else {
+			Ticket ticket2 =parkingLot.createTicket(licensePlate, Color.RED);
+			assertEquals(licensePlate, ticket2.getLicensePlateNumber());
 		}
 	}
 

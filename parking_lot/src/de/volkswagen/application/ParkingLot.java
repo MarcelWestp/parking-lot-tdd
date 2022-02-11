@@ -1,12 +1,16 @@
 package de.volkswagen.application;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import javafx.scene.paint.Color;
 
 public class ParkingLot {
 
 	private int sizeParkingLot = 0;
-	private List<Integer> parkingLots = new ArrayList<>();
+	private HashMap<Integer, Ticket> parkingLots = new HashMap<>();
 
 	public ParkingLot(int sizeParkingLot) {
 		if (sizeParkingLot >= 500) {
@@ -15,7 +19,7 @@ public class ParkingLot {
 			this.sizeParkingLot = sizeParkingLot;
 		}
 		for (int i = 0; i < this.sizeParkingLot; i++) {
-			parkingLots.add(i + 1);
+			parkingLots.put(i +1, null);
 		}
 
 	}
@@ -36,8 +40,24 @@ public class ParkingLot {
 		if (parkingLotNumber < 1 || parkingLotNumber > sizeParkingLot) {
 			throw new RuntimeException("Parking Lot Number must between 1 and " + sizeParkingLot);
 		}
-		return parkingLots.get(parkingLotNumber - 1);
+		Ticket ticket = parkingLots.get(parkingLotNumber);
+		return parkingLotNumber;
+	}
 
+	public Ticket createTicket(String licensePlate, Color carColor) {
+		int availableParkingSlot = 0;
+		for(int i = 1; i <= this.sizeParkingLot; i++) {
+			if(this.parkingLots.get(i) == null) {
+				availableParkingSlot = i;
+				break;
+			}else if(this.sizeParkingLot == i) {
+				throw new RuntimeException("No available parking slot");
+			}
+		}
+		Ticket ticket = new Ticket(licensePlate, carColor, availableParkingSlot);
+		this.parkingLots.replace(availableParkingSlot, ticket);
+		
+		return ticket;
 	}
 
 }
